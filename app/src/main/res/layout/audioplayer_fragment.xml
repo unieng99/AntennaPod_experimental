@@ -211,6 +211,8 @@
                     android:layout_height="@dimen/audioplayer_playercontrols_length"
                     android:padding="8dp"
                     android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
                     android:layout_toStartOf="@id/butRev"
                     android:layout_toLeftOf="@id/butRev"
                     android:background="?attr/selectableItemBackgroundBorderless"
