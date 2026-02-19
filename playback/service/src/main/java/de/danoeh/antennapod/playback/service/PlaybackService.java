@@ -1178,6 +1178,10 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                 stateManager.stopService();
                 return null;
             }
+            if (!nextMedia.localFileAvailable() && NetworkUtils.isStreamingAllowed()
+                    && !nextItem.getFeed().isLocalFeed()) {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_streaming_notice)));
+            }
             logDebug("Queue-mode returning next media " + nextMedia.getEpisodeTitle());
             return nextMedia;
         }
@@ -1204,6 +1208,10 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                 PlaybackPreferences.writeNoMediaPlaying();
                 stateManager.stopService();
                 return null;
+            }
+            if (!nextMedia.localFileAvailable() && NetworkUtils.isStreamingAllowed()
+                    && !nextFeedItem.getFeed().isLocalFeed()) {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_streaming_notice)));
             }
             logDebug("Podcast mode returning next media id=" + nextFeedItem.getId()
                     + " title=" + nextFeedItem.getTitle());

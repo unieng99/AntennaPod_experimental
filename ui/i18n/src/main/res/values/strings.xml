@@ -708,6 +708,7 @@
     <string name="extend_sleep_timer_label">+%d min</string>
     <string name="reduce_sleep_timer_label">-%d min</string>
     <string name="sleep_timer_episodes_label">episodes</string>
+    <string name="auto_advance_streaming_notice">Next episode will play by streaming per your settings</string>
     <string name="sleep_timer_without_continuous_playback">Disable continuous playback</string>
     <string name="sleep_timer_without_continuous_playback_change_hours">Change hours</string>
     <string name="sleep_timer_without_continuous_playback_message">Instead of always automatically enabling the sleep timer with one episode, please instead disable \"continuous playback\" in the settings.</string>

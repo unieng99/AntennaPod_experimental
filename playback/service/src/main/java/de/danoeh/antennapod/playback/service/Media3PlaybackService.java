@@ -699,6 +699,10 @@ public class Media3PlaybackService extends MediaLibraryService {
                 postStreamingBlocked();
                 return null;
             }
+            if (!nextItem.getMedia().localFileAvailable() && NetworkUtils.isStreamingAllowed()
+                    && !nextItem.getFeed().isLocalFeed()) {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_streaming_notice)));
+            }
             return nextItem.getMedia();
         }
 
@@ -718,6 +722,10 @@ public class Media3PlaybackService extends MediaLibraryService {
                 logDebug("resolveNextPlayable podcastMode streaming blocked nextItem=" + nextFeedItem.getId());
                 postStreamingBlocked();
                 return null;
+            }
+            if (!media.localFileAvailable() && NetworkUtils.isStreamingAllowed()
+                    && !nextFeedItem.getFeed().isLocalFeed()) {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_streaming_notice)));
             }
             return media;
         }

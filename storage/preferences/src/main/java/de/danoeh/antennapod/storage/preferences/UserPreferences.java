@@ -379,7 +379,7 @@ public abstract class UserPreferences {
     }
 
     public static boolean isUnpauseOnBluetoothReconnect() {
-        return prefs.getBoolean(PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT, false);
+        return prefs.getBoolean(PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT, true);
     }
 
     public static int getHardwareForwardButton() {
