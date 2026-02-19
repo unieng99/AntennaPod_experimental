@@ -55,6 +55,7 @@ import de.danoeh.antennapod.ui.cleaner.HtmlToPlainText;
 import de.danoeh.antennapod.ui.common.IntentUtils;
 import de.danoeh.antennapod.ui.common.OnCollapseChangeListener;
 import de.danoeh.antennapod.ui.common.RefreshActionViewController;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemListAdapter;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemViewHolder;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeMultiSelectActionHandler;
@@ -107,6 +108,7 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
     private FeedItemListFragmentBinding viewBinding;
     private Pair<Integer, Integer> scrollPosition = null;
     private RefreshActionViewController refreshActionViewController;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
     private boolean isFeedUpdateRunning;
 
     /**
@@ -143,6 +145,11 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
                 R.id.refresh_item, getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext(), feed));
         if (refreshActionViewController != null) {
             refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(
+            viewBinding.toolbar.getMenu(), R.id.autoplay_toggle_item, getContext());
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
         }
         viewBinding.toolbar.setOnMenuItemClickListener(this);
         viewBinding.toolbar.setOnLongClickListener(v -> {
@@ -264,6 +271,14 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
 
@@ -275,6 +290,10 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
         if (refreshActionViewController != null) {
             refreshActionViewController.clear();
             refreshActionViewController = null;
+        }
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.clear();
+            autoplayToggleActionViewController = null;
         }
     }
 

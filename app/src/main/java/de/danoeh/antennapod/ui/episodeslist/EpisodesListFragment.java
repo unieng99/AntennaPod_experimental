@@ -37,6 +37,7 @@ import java.util.List;
 import de.danoeh.antennapod.R;
 import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.ui.common.ConfirmationDialog;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import de.danoeh.antennapod.ui.common.RefreshActionViewController;
 import de.danoeh.antennapod.ui.MenuItemUtils;
 import de.danoeh.antennapod.event.EpisodeDownloadEvent;
@@ -78,6 +79,7 @@ public abstract class EpisodesListFragment extends Fragment
     protected SwipeRefreshLayout swipeRefreshLayout;
     protected SwipeActions swipeActions;
     private RefreshActionViewController refreshActionViewController;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
     private boolean isFeedUpdateRunning;
     private ProgressBar progressBar;
     @NonNull
@@ -96,6 +98,9 @@ public abstract class EpisodesListFragment extends Fragment
     public void onResume() {
         super.onResume();
         registerForContextMenu(recyclerView);
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
     }
 
     @Override
@@ -315,6 +320,10 @@ public abstract class EpisodesListFragment extends Fragment
             refreshActionViewController.clear();
             refreshActionViewController = null;
         }
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.clear();
+            autoplayToggleActionViewController = null;
+        }
         listAdapter.endSelectMode();
     }
 
@@ -454,6 +463,14 @@ public abstract class EpisodesListFragment extends Fragment
         swipeRefreshLayout.setRefreshing(isFeedUpdateRunning);
         if (refreshActionViewController != null) {
             refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
+    }
+
+    protected void attachAutoplayToggleActionView() {
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(toolbar.getMenu(),
+                R.id.autoplay_toggle_item, getContext());
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
         }
     }
 

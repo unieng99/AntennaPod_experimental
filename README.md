@@ -1,22 +1,20 @@
 # AntennaPod (Unofficial fork)
 
-> **Unofficial, unsupported fork – unified continuous playback, improved car integration**
+> **Unofficial, unsupported fork – unified continuous playback, shortcut icons, improved car integration**
 >
 > Maintained by **@unieng99**. Not affiliated with or endorsed by the upstream [AntennaPod](https://github.com/AntennaPod/AntennaPod) project.
 
 ## Scope of this fork
 
-- **Focus:** Experimental proof-of-concept work to support auto-advance during playback when episodes are ordered via either **(a)** the user-defined **Queue**, or **(b)** a **feed episode list** ordered by the user’s selected sort. Shared as-is. I’m not a professional Android developer.
-- **How it’s enabled:** Auto-advance is controlled globally via **Settings → Playback → Playback control → Continuous playback** (formerly **Settings → Playback → Queue → Continuous playback**).
-- **Queue-based continuous playback:** Triggered when you start playback from the **Queue** tab.
-- **Feed-based continuous playback:** Triggered when you start playback from the **Subscriptions** tab. Example use cases include binge listening to podcasts, and sequential playback of audiobook/lecture series.
+- **Unified auto-advance:** auto-advance during playback when episodes are ordered via either **(a)** the user-defined **Queue**, or **(b)** a **feed episode list** ordered by the user’s selected sort. Shared as-is. I’m not a professional Android developer.
+  - **How it’s enabled:** Auto-advance is controlled globally via **Settings → Playback → Playback control → Continuous playback** (formerly **Settings → Playback → Queue → Continuous playback**) or by right upper corner shortcut Autoplay toggle icon.
+  - **Queue-based continuous playback:** Triggered when you start playback from the **Queue** tab.
+  - **Feed-based continuous playback:** Triggered when you start playback from the **Subscriptions** tab. 
+    - Example use cases include binge listening to podcasts, and sequential playback of audiobook/lecture series.
+- **Shortcut icons:** introduced animated Refresh and Autoplay toggle shortcut icons in the right upper corner
+- **Car bluetooth integration improvements**
 - **Support:** Distributed **as-is** with **no support**. Issues/PRs may be closed without action.
 - **Upstream etiquette:** Please **do not** contact the upstream project about this fork or its APKs. The upstream maintainers did not author, review, or support these changes.
-
-## What changed (fork highlights)
-
-- One global continuous playback switch now governs queue/podcast auto-advance.
-- In-app About screen states the build is unofficial and unsupported.
 
 ## Try it (at your own risk)
 

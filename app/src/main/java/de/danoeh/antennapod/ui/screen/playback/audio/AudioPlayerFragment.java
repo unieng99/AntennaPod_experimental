@@ -75,6 +75,7 @@ import de.danoeh.antennapod.model.feed.FeedMedia;
 import de.danoeh.antennapod.model.playback.Playable;
 import de.danoeh.antennapod.playback.cast.CastEnabledActivity;
 import de.danoeh.antennapod.storage.preferences.UserPreferences;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -102,6 +103,7 @@ public class AudioPlayerFragment extends Fragment implements
     private TextView txtvFF;
     private ImageButton butSkip;
     private MaterialToolbar toolbar;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
     private ProgressBar progressIndicator;
     private CardView cardViewSeek;
     private TextView txtvSeek;
@@ -126,6 +128,11 @@ public class AudioPlayerFragment extends Fragment implements
                 ((MainActivity) getActivity()).getBottomSheet().setState(BottomSheetBehavior.STATE_COLLAPSED));
         toolbar.setOnMenuItemClickListener(this);
         toolbar.inflateMenu(R.menu.mediaplayer);
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(
+            toolbar.getMenu(), R.id.autoplay_toggle_item, getContext());
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
 
         ExternalPlayerFragment externalPlayerFragment = new ExternalPlayerFragment();
         getChildFragmentManager().beginTransaction()
@@ -345,6 +352,14 @@ public class AudioPlayerFragment extends Fragment implements
         EventBus.getDefault().register(this);
         txtvRev.setText(NumberFormat.getInstance().format(UserPreferences.getRewindSecs()));
         txtvFF.setText(NumberFormat.getInstance().format(UserPreferences.getFastForwardSecs()));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
     }
 
     @Override

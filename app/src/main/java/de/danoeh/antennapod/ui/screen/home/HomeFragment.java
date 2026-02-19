@@ -32,6 +32,7 @@ import de.danoeh.antennapod.ui.screen.home.sections.SubscriptionsSection;
 import de.danoeh.antennapod.ui.screen.home.settingsdialog.HomePreferences;
 import de.danoeh.antennapod.ui.screen.home.settingsdialog.HomeSectionsSettingsDialog;
 import de.danoeh.antennapod.ui.view.LiftOnScrollListener;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import de.danoeh.antennapod.ui.common.RefreshActionViewController;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -57,6 +58,7 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
     private HomeFragmentBinding viewBinding;
     private Disposable disposable;
     private RefreshActionViewController refreshActionViewController;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
     private boolean isFeedUpdateRunning;
 
     @NonNull
@@ -69,6 +71,11 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
                 R.id.refresh_item, getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
         if (refreshActionViewController != null) {
             refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(
+            viewBinding.toolbar.getMenu(), R.id.autoplay_toggle_item, getContext());
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
         }
         viewBinding.toolbar.setOnMenuItemClickListener(this);
         if (savedInstanceState != null) {
@@ -155,6 +162,14 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
@@ -172,6 +187,10 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
         if (refreshActionViewController != null) {
             refreshActionViewController.clear();
             refreshActionViewController = null;
+        }
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.clear();
+            autoplayToggleActionViewController = null;
         }
     }
 

@@ -35,6 +35,7 @@ public class PlaybackHistoryFragment extends EpisodesListFragment {
         final View root = super.onCreateView(inflater, container, savedInstanceState);
         toolbar.inflateMenu(R.menu.playback_history);
         attachRefreshActionView();
+        attachAutoplayToggleActionView();
         toolbar.setTitle(R.string.playback_history_label);
         updateToolbar();
         emptyView.setIcon(R.drawable.ic_history);

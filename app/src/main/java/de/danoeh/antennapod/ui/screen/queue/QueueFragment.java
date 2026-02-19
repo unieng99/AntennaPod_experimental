@@ -52,6 +52,7 @@ import de.danoeh.antennapod.storage.database.DBReader;
 import de.danoeh.antennapod.storage.database.DBWriter;
 import de.danoeh.antennapod.ui.common.Converter;
 import de.danoeh.antennapod.ui.screen.feed.ItemSortDialog;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import de.danoeh.antennapod.event.EpisodeDownloadEvent;
 import de.danoeh.antennapod.event.FeedItemEvent;
 import de.danoeh.antennapod.event.FeedUpdateRunningEvent;
@@ -106,6 +107,7 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
     private FloatingSelectMenu floatingSelectMenu;
     private ProgressBar progressBar;
     private RefreshActionViewController refreshActionViewController;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
     private boolean isFeedUpdateRunning;
 
     @Override
@@ -127,6 +129,9 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
         PlaybackPreferences.setAutoAdvanceMode(PlaybackPreferences.AUTO_ADVANCE_QUEUE);
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).refreshDevStateHeader();
+        }
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
         }
     }
 
@@ -282,6 +287,10 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
         if (refreshActionViewController != null) {
             refreshActionViewController.clear();
             refreshActionViewController = null;
+        }
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.clear();
+            autoplayToggleActionViewController = null;
         }
     }
 
@@ -440,6 +449,11 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
             getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
         if (refreshActionViewController != null) {
             refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(toolbar.getMenu(),
+                R.id.autoplay_toggle_item, getContext());
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
         }
         refreshToolbarState();
         progressBar = root.findViewById(R.id.progressBar);

@@ -45,6 +45,7 @@ public class InboxFragment extends EpisodesListFragment {
         final View root = super.onCreateView(inflater, container, savedInstanceState);
         toolbar.inflateMenu(R.menu.inbox);
         attachRefreshActionView();
+        attachAutoplayToggleActionView();
         toolbar.setTitle(R.string.inbox_label);
         prefs = getActivity().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         updateToolbar();

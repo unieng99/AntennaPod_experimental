@@ -18,6 +18,12 @@
             android:menuCategory="container"
             custom:showAsAction="always" />
     <item
+            android:id="@+id/autoplay_toggle_item"
+            android:icon="@drawable/ic_shortcut_autoplay_off"
+            android:title="@string/autoplay_toggle_off"
+            android:menuCategory="container"
+            custom:showAsAction="always" />
+    <item
             android:id="@+id/subscriptions_filter"
             android:title="@string/filter"
             custom:showAsAction="never" />

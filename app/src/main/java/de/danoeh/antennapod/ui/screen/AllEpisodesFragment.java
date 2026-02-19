@@ -41,6 +41,7 @@ public class AllEpisodesFragment extends EpisodesListFragment {
         final View root = super.onCreateView(inflater, container, savedInstanceState);
         toolbar.inflateMenu(R.menu.episodes);
         attachRefreshActionView();
+        attachAutoplayToggleActionView();
         toolbar.setTitle(R.string.episodes_label);
         updateToolbar();
         updateFilterUi();

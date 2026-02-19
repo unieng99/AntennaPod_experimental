@@ -61,6 +61,7 @@ import de.danoeh.antennapod.storage.database.DBWriter;
 import de.danoeh.antennapod.storage.preferences.UserPreferences;
 import de.danoeh.antennapod.ui.appstartintent.MainActivityStarter;
 import de.danoeh.antennapod.ui.common.Converter;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import de.danoeh.antennapod.ui.common.IntentUtils;
 import de.danoeh.antennapod.ui.episodes.TimeSpeedConverter;
 import de.danoeh.antennapod.ui.episodeslist.FeedItemMenuHandler;
@@ -105,6 +106,7 @@ public class VideoplayerActivity extends CastEnabledActivity
     private boolean showTimeLeft = false;
     private boolean switchToAudioOnly = false;
     private Disposable disposable;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
     private float prog;
 
     @Override
@@ -153,6 +155,9 @@ public class VideoplayerActivity extends CastEnabledActivity
     protected void onResume() {
         super.onResume();
         switchToAudioOnly = false;
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
         if (PlaybackService.isCasting()) {
             Intent intent = PlaybackService.getPlayerActivityIntent(this);
             if (!intent.getComponent().getClassName().equals(VideoplayerActivity.class.getName())) {
@@ -375,6 +380,11 @@ public class VideoplayerActivity extends CastEnabledActivity
 
         viewBinding.toolbar.inflateMenu(R.menu.mediaplayer);
         requestCastButton(viewBinding.toolbar.getMenu());
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(
+                viewBinding.toolbar.getMenu(), R.id.autoplay_toggle_item, this);
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
         viewBinding.toolbar.setOnMenuItemClickListener(this);
         viewBinding.toolbar.setNavigationOnClickListener(v -> {
             Intent intent = new Intent(VideoplayerActivity.this, MainActivity.class);

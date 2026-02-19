@@ -35,6 +35,8 @@
     <string name="years_statistics_label">Years</string>
     <string name="notification_pref_fragment">Notifications</string>
     <string name="current_playing_episode">Current</string>
+    <string name="autoplay_toggle_on">Continuous playback on</string>
+    <string name="autoplay_toggle_off">Continuous playback off</string>
 
     <!-- Google Assistant -->
     <string name="app_action_not_found">\"%1$s\" not found</string>
@@ -307,8 +309,6 @@
     <string name="visit_social_interact_confirm_dialog_title">You are leaving AntennaPod</string>
     <string name="visit_social_interact_confirm_dialog_message">Please make sure that you trust the website \"%1$s\".</string>
     <string name="skip_episode_label">Skip episode</string>
-    <string name="autoplay_toggle_on">Disable autoplay for this podcast</string>
-    <string name="autoplay_toggle_off">Enable autoplay for this podcast</string>
     <string name="reset_playback_position_label">Reset playback position</string>
     <string name="no_items_selected_message">No items selected</string>
     <string name="delete_local_feed_confirmation_dialog_message">Deleting removes the episode from AntennaPod and deletes the media file from your device storage. It cannot be downloaded again through AntennaPod.</string>

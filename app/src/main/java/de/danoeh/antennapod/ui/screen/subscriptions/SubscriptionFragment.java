@@ -42,6 +42,7 @@ import de.danoeh.antennapod.ui.view.FloatingSelectMenu;
 import de.danoeh.antennapod.ui.view.ItemOffsetDecoration;
 import de.danoeh.antennapod.ui.view.LiftOnScrollListener;
 import de.danoeh.antennapod.ui.common.RefreshActionViewController;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import de.danoeh.antennapod.storage.preferences.PlaybackPreferences;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
@@ -86,6 +87,7 @@ public class SubscriptionFragment extends Fragment
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar progressBar;
     private RefreshActionViewController refreshActionViewController;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
     private boolean isFeedUpdateRunning;
     private CollapsingToolbarLayout collapsingContainer;
     private boolean displayUpArrow;
@@ -124,6 +126,9 @@ public class SubscriptionFragment extends Fragment
         PlaybackPreferences.setAutoAdvanceMode(PlaybackPreferences.AUTO_ADVANCE_PODCAST);
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).refreshDevStateHeader();
+        }
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
         }
     }
 
@@ -210,6 +215,11 @@ public class SubscriptionFragment extends Fragment
                 getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
         if (refreshActionViewController != null) {
             refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(toolbar.getMenu(),
+            R.id.autoplay_toggle_item, getContext());
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
         }
         floatingSelectMenu.setOnMenuItemClickListener(menuItem -> {
             List<Feed> selection = subscriptionAdapter.getSelectedItems();
@@ -390,6 +400,10 @@ public class SubscriptionFragment extends Fragment
         if (refreshActionViewController != null) {
             refreshActionViewController.clear();
             refreshActionViewController = null;
+        }
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.clear();
+            autoplayToggleActionViewController = null;
         }
     }
 

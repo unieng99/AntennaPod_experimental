@@ -43,6 +43,7 @@ import de.danoeh.antennapod.net.discovery.ItunesPodcastSearcher;
 import de.danoeh.antennapod.net.discovery.PodcastIndexPodcastSearcher;
 import de.danoeh.antennapod.ui.appstartintent.OnlineFeedviewActivityStarter;
 import de.danoeh.antennapod.ui.common.Keyboard;
+import de.danoeh.antennapod.ui.common.AutoplayToggleActionViewController;
 import de.danoeh.antennapod.ui.discovery.OnlineSearchFragment;
 import de.danoeh.antennapod.ui.screen.feed.FeedItemlistFragment;
 import de.danoeh.antennapod.ui.view.LiftOnScrollListener;
@@ -64,6 +65,7 @@ public class AddFeedFragment extends Fragment {
     private AddfeedBinding viewBinding;
     private MainActivity activity;
     private boolean displayUpArrow;
+    private AutoplayToggleActionViewController autoplayToggleActionViewController;
 
     private final ActivityResultLauncher<String> chooseOpmlImportPathLauncher =
             registerForActivityResult(new GetContent(), this::chooseOpmlImportPathResult);
@@ -84,6 +86,12 @@ public class AddFeedFragment extends Fragment {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW);
         }
         ((MainActivity) getActivity()).setupToolbarToggle(viewBinding.toolbar, displayUpArrow);
+        viewBinding.toolbar.inflateMenu(R.menu.add_feed);
+        autoplayToggleActionViewController = AutoplayToggleActionViewController.attach(
+            viewBinding.toolbar.getMenu(), R.id.autoplay_toggle_item, getContext());
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
 
         NestedScrollView scrollView = viewBinding.getRoot().findViewById(R.id.scrollView);
         scrollView.setOnScrollChangeListener(new LiftOnScrollListener(viewBinding.appbar));
@@ -129,6 +137,14 @@ public class AddFeedFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putBoolean(KEY_UP_ARROW, displayUpArrow);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (autoplayToggleActionViewController != null) {
+            autoplayToggleActionViewController.syncState();
+        }
     }
 
     private void showAddViaUrlDialog() {
