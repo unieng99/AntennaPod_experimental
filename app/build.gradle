@@ -60,8 +60,8 @@ android {
         // Version code schema:
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3110117
-        versionName "0.00.22-beta1"
+        versionCode 3110118
+        versionName "0.00.23-beta1"
 
         buildConfigField "String", "GIT_SHA", '"' + gitShortSha() + '"'
         buildConfigField "String", "GIT_BRANCH", '"' + gitBranch() + '"'
