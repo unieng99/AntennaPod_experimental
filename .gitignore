@@ -53,6 +53,7 @@ Screenshot_*.png
 *.log
 *.jks
 crash.txt
+*.dm
 
 # ---- Secrets / credentials ----
 .env
