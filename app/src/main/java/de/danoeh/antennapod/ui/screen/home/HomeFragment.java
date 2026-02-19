@@ -32,6 +32,7 @@ import de.danoeh.antennapod.ui.screen.home.sections.SubscriptionsSection;
 import de.danoeh.antennapod.ui.screen.home.settingsdialog.HomePreferences;
 import de.danoeh.antennapod.ui.screen.home.settingsdialog.HomeSectionsSettingsDialog;
 import de.danoeh.antennapod.ui.view.LiftOnScrollListener;
+import de.danoeh.antennapod.ui.common.RefreshActionViewController;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -55,6 +56,8 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
     private boolean displayUpArrow;
     private HomeFragmentBinding viewBinding;
     private Disposable disposable;
+    private RefreshActionViewController refreshActionViewController;
+    private boolean isFeedUpdateRunning;
 
     @NonNull
     @Override
@@ -62,6 +65,11 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
         super.onCreateView(inflater, container, savedInstanceState);
         viewBinding = HomeFragmentBinding.inflate(inflater);
         viewBinding.toolbar.inflateMenu(R.menu.home);
+        refreshActionViewController = RefreshActionViewController.attach(viewBinding.toolbar.getMenu(),
+                R.id.refresh_item, getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
         viewBinding.toolbar.setOnMenuItemClickListener(this);
         if (savedInstanceState != null) {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW);
@@ -118,7 +126,11 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onEventMainThread(FeedUpdateRunningEvent event) {
-        viewBinding.swipeRefresh.setRefreshing(event.isFeedUpdateRunning);
+        isFeedUpdateRunning = event.isFeedUpdateRunning;
+        viewBinding.swipeRefresh.setRefreshing(isFeedUpdateRunning);
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
     }
 
     @Override
@@ -152,6 +164,15 @@ public class HomeFragment extends Fragment implements Toolbar.OnMenuItemClickLis
     public void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (refreshActionViewController != null) {
+            refreshActionViewController.clear();
+            refreshActionViewController = null;
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

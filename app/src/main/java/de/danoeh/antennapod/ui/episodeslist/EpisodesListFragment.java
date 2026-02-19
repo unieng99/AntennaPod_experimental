@@ -78,6 +78,7 @@ public abstract class EpisodesListFragment extends Fragment
     protected SwipeRefreshLayout swipeRefreshLayout;
     protected SwipeActions swipeActions;
     private RefreshActionViewController refreshActionViewController;
+    private boolean isFeedUpdateRunning;
     private ProgressBar progressBar;
     @NonNull
     protected List<FeedItem> episodes = new ArrayList<>();
@@ -149,8 +150,6 @@ public abstract class EpisodesListFragment extends Fragment
         View root = inflater.inflate(R.layout.episodes_list_fragment, container, false);
         txtvInformation = root.findViewById(R.id.txtvInformation);
         toolbar = root.findViewById(R.id.toolbar);
-        refreshActionViewController = RefreshActionViewController.attach(toolbar.getMenu(), R.id.refresh_item,
-            getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setOnLongClickListener(v -> {
             recyclerView.scrollToPosition(5);
@@ -451,9 +450,18 @@ public abstract class EpisodesListFragment extends Fragment
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onEventMainThread(FeedUpdateRunningEvent event) {
-        swipeRefreshLayout.setRefreshing(event.isFeedUpdateRunning);
+        isFeedUpdateRunning = event.isFeedUpdateRunning;
+        swipeRefreshLayout.setRefreshing(isFeedUpdateRunning);
         if (refreshActionViewController != null) {
-            refreshActionViewController.setRefreshing(event.isFeedUpdateRunning);
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
+    }
+
+    protected void attachRefreshActionView() {
+        refreshActionViewController = RefreshActionViewController.attach(toolbar.getMenu(), R.id.refresh_item,
+                getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
         }
     }
 

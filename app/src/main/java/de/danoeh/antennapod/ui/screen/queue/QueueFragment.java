@@ -46,6 +46,7 @@ import de.danoeh.antennapod.R;
 import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemListAdapter;
 import de.danoeh.antennapod.ui.common.ConfirmationDialog;
+import de.danoeh.antennapod.ui.common.RefreshActionViewController;
 import de.danoeh.antennapod.ui.MenuItemUtils;
 import de.danoeh.antennapod.storage.database.DBReader;
 import de.danoeh.antennapod.storage.database.DBWriter;
@@ -104,6 +105,8 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
 
     private FloatingSelectMenu floatingSelectMenu;
     private ProgressBar progressBar;
+    private RefreshActionViewController refreshActionViewController;
+    private boolean isFeedUpdateRunning;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -276,6 +279,10 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
             toolbar.setOnMenuItemClickListener(null);
             toolbar.setOnLongClickListener(null);
         }
+        if (refreshActionViewController != null) {
+            refreshActionViewController.clear();
+            refreshActionViewController = null;
+        }
     }
 
     private void refreshToolbarState() {
@@ -286,7 +293,11 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onEventMainThread(FeedUpdateRunningEvent event) {
-        swipeRefreshLayout.setRefreshing(event.isFeedUpdateRunning);
+        isFeedUpdateRunning = event.isFeedUpdateRunning;
+        swipeRefreshLayout.setRefreshing(isFeedUpdateRunning);
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -425,6 +436,11 @@ public class QueueFragment extends Fragment implements MaterialToolbar.OnMenuIte
         }
         ((MainActivity) getActivity()).setupToolbarToggle(toolbar, displayUpArrow);
         toolbar.inflateMenu(R.menu.queue);
+        refreshActionViewController = RefreshActionViewController.attach(toolbar.getMenu(), R.id.refresh_item,
+            getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
         refreshToolbarState();
         progressBar = root.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);

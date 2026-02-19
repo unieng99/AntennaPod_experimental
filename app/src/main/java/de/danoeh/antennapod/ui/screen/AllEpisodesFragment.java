@@ -40,6 +40,7 @@ public class AllEpisodesFragment extends EpisodesListFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View root = super.onCreateView(inflater, container, savedInstanceState);
         toolbar.inflateMenu(R.menu.episodes);
+        attachRefreshActionView();
         toolbar.setTitle(R.string.episodes_label);
         updateToolbar();
         updateFilterUi();

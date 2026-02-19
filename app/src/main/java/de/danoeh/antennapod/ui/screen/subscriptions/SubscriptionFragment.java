@@ -41,6 +41,7 @@ import de.danoeh.antennapod.ui.view.EmptyViewHandler;
 import de.danoeh.antennapod.ui.view.FloatingSelectMenu;
 import de.danoeh.antennapod.ui.view.ItemOffsetDecoration;
 import de.danoeh.antennapod.ui.view.LiftOnScrollListener;
+import de.danoeh.antennapod.ui.common.RefreshActionViewController;
 import de.danoeh.antennapod.storage.preferences.PlaybackPreferences;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
@@ -84,6 +85,8 @@ public class SubscriptionFragment extends Fragment
     private MaterialToolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar progressBar;
+    private RefreshActionViewController refreshActionViewController;
+    private boolean isFeedUpdateRunning;
     private CollapsingToolbarLayout collapsingContainer;
     private boolean displayUpArrow;
     private boolean shouldShowTags = false;
@@ -203,6 +206,11 @@ public class SubscriptionFragment extends Fragment
             floatingSelectMenu.getMenu().removeItem(R.id.playback_speed);
             subscriptionAddButton.setVisibility(View.GONE);
         }
+        refreshActionViewController = RefreshActionViewController.attach(toolbar.getMenu(), R.id.refresh_item,
+                getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
         floatingSelectMenu.setOnMenuItemClickListener(menuItem -> {
             List<Feed> selection = subscriptionAdapter.getSelectedItems();
             new FeedMultiSelectActionHandler(getActivity(), selection)
@@ -255,7 +263,11 @@ public class SubscriptionFragment extends Fragment
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onEventMainThread(FeedUpdateRunningEvent event) {
-        swipeRefreshLayout.setRefreshing(event.isFeedUpdateRunning);
+        isFeedUpdateRunning = event.isFeedUpdateRunning;
+        swipeRefreshLayout.setRefreshing(isFeedUpdateRunning);
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
     }
 
     @Override
@@ -369,6 +381,15 @@ public class SubscriptionFragment extends Fragment
         }
         if (subscriptionAdapter != null) {
             subscriptionAdapter.endSelectMode();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (refreshActionViewController != null) {
+            refreshActionViewController.clear();
+            refreshActionViewController = null;
         }
     }
 

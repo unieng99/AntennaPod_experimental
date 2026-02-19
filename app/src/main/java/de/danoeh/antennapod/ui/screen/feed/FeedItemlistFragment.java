@@ -54,6 +54,7 @@ import de.danoeh.antennapod.ui.appstartintent.MainActivityStarter;
 import de.danoeh.antennapod.ui.cleaner.HtmlToPlainText;
 import de.danoeh.antennapod.ui.common.IntentUtils;
 import de.danoeh.antennapod.ui.common.OnCollapseChangeListener;
+import de.danoeh.antennapod.ui.common.RefreshActionViewController;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemListAdapter;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemViewHolder;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeMultiSelectActionHandler;
@@ -105,6 +106,8 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
     private Disposable disposable;
     private FeedItemListFragmentBinding viewBinding;
     private Pair<Integer, Integer> scrollPosition = null;
+    private RefreshActionViewController refreshActionViewController;
+    private boolean isFeedUpdateRunning;
 
     /**
      * Creates new ItemlistFragment which shows the Feeditems of a specific
@@ -136,6 +139,11 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
                              @Nullable Bundle savedInstanceState) {
         viewBinding = FeedItemListFragmentBinding.inflate(inflater);
         viewBinding.toolbar.inflateMenu(R.menu.feedlist);
+        refreshActionViewController = RefreshActionViewController.attach(viewBinding.toolbar.getMenu(),
+                R.id.refresh_item, getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext(), feed));
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
         viewBinding.toolbar.setOnMenuItemClickListener(this);
         viewBinding.toolbar.setOnLongClickListener(v -> {
             viewBinding.recyclerView.scrollToPosition(5);
@@ -264,6 +272,10 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
             disposable.dispose();
         }
         adapter.endSelectMode();
+        if (refreshActionViewController != null) {
+            refreshActionViewController.clear();
+            refreshActionViewController = null;
+        }
     }
 
     @Override
@@ -492,7 +504,11 @@ public class FeedItemlistFragment extends Fragment implements AdapterView.OnItem
         if (!event.isFeedUpdateRunning) {
             nextPageLoader.getRoot().setVisibility(View.GONE);
         }
-        viewBinding.swipeRefresh.setRefreshing(event.isFeedUpdateRunning);
+        isFeedUpdateRunning = event.isFeedUpdateRunning;
+        viewBinding.swipeRefresh.setRefreshing(isFeedUpdateRunning);
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
     }
 
     private void refreshHeaderView() {

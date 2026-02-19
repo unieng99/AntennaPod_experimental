@@ -21,6 +21,7 @@ import de.danoeh.antennapod.activity.MainActivity;
 import de.danoeh.antennapod.event.FeedUpdateRunningEvent;
 import de.danoeh.antennapod.event.MessageEvent;
 import de.danoeh.antennapod.ui.common.ConfirmationDialog;
+import de.danoeh.antennapod.ui.common.RefreshActionViewController;
 import de.danoeh.antennapod.ui.episodeslist.EpisodeItemListAdapter;
 import de.danoeh.antennapod.actionbutton.DeleteActionButton;
 import de.danoeh.antennapod.event.DownloadLogEvent;
@@ -82,6 +83,8 @@ public class CompletedDownloadsFragment extends Fragment
     private ProgressBar progressBar;
     private MaterialToolbar toolbar;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private RefreshActionViewController refreshActionViewController;
+    private boolean isFeedUpdateRunning;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -90,6 +93,11 @@ public class CompletedDownloadsFragment extends Fragment
         toolbar = root.findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.downloads_label);
         toolbar.inflateMenu(R.menu.downloads_completed);
+        refreshActionViewController = RefreshActionViewController.attach(toolbar.getMenu(), R.id.refresh_item,
+                getContext(), () -> FeedUpdateManager.getInstance().runOnceOrAsk(requireContext()));
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setOnLongClickListener(v -> {
             recyclerView.scrollToPosition(5);
@@ -152,6 +160,10 @@ public class CompletedDownloadsFragment extends Fragment
         if (toolbar != null) {
             toolbar.setOnMenuItemClickListener(null);
             toolbar.setOnLongClickListener(null);
+        }
+        if (refreshActionViewController != null) {
+            refreshActionViewController.clear();
+            refreshActionViewController = null;
         }
         super.onDestroyView();
     }
@@ -302,7 +314,11 @@ public class CompletedDownloadsFragment extends Fragment
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onEventMainThread(FeedUpdateRunningEvent event) {
-        swipeRefreshLayout.setRefreshing(event.isFeedUpdateRunning);
+        isFeedUpdateRunning = event.isFeedUpdateRunning;
+        swipeRefreshLayout.setRefreshing(isFeedUpdateRunning);
+        if (refreshActionViewController != null) {
+            refreshActionViewController.setRefreshing(isFeedUpdateRunning);
+        }
     }
 
     private void loadItems() {
