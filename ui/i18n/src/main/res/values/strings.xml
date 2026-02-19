@@ -706,6 +706,7 @@
     <string name="set_sleeptimer_label">Set sleep timer</string>
     <string name="disable_sleeptimer_label">Disable sleep timer</string>
     <string name="extend_sleep_timer_label">+%d min</string>
+    <string name="reduce_sleep_timer_label">-%d min</string>
     <string name="sleep_timer_episodes_label">episodes</string>
     <string name="sleep_timer_without_continuous_playback">Disable continuous playback</string>
     <string name="sleep_timer_without_continuous_playback_change_hours">Change hours</string>

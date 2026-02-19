@@ -58,12 +58,12 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class SleepTimerDialog extends BottomSheetDialogFragment {
-    private static final int EXTEND_FEW_MINUTES_DISPLAY_VALUE = 5;
-    private static final int EXTEND_FEW_MINUTES = 5 * 1000 * 60;
-    private static final int EXTEND_MID_MINUTES_DISPLAY_VALUE = 10;
-    private static final int EXTEND_MID_MINUTES = 10 * 1000 * 60;
-    private static final int EXTEND_LOTS_MINUTES_DISPLAY_VALUE = 30;
-    private static final int EXTEND_LOTS_MINUTES = 30 * 1000 * 60;
+    private static final int ADJUST_SUBTRACT_MINUTES_DISPLAY_VALUE = 10;
+    private static final int ADJUST_SUBTRACT_MINUTES = -10 * 1000 * 60;
+    private static final int ADJUST_ADD_MINUTES_DISPLAY_VALUE = 10;
+    private static final int ADJUST_ADD_MINUTES = 10 * 1000 * 60;
+    private static final int ADJUST_LOTS_MINUTES_DISPLAY_VALUE = 30;
+    private static final int ADJUST_LOTS_MINUTES = 30 * 1000 * 60;
     private static final int EXTEND_FEW_EPISODES = 1;
     private static final int EXTEND_MID_EPISODES = 2;
     private static final int EXTEND_LOTS_EPISODES = 3;
@@ -372,14 +372,14 @@ public class SleepTimerDialog extends BottomSheetDialogFragment {
 
         if (SleepTimerPreferences.getSleepTimerType() == SleepTimerType.CLOCK) {
             setupExtendButton(viewBinding.extendSleepFiveMinutesButton,
-                    getString(R.string.extend_sleep_timer_label, EXTEND_FEW_MINUTES_DISPLAY_VALUE),
-                    EXTEND_FEW_MINUTES);
+                getString(R.string.reduce_sleep_timer_label, ADJUST_SUBTRACT_MINUTES_DISPLAY_VALUE),
+                ADJUST_SUBTRACT_MINUTES);
             setupExtendButton(viewBinding.extendSleepTenMinutesButton,
-                    getString(R.string.extend_sleep_timer_label, EXTEND_MID_MINUTES_DISPLAY_VALUE),
-                    EXTEND_MID_MINUTES);
+                getString(R.string.extend_sleep_timer_label, ADJUST_ADD_MINUTES_DISPLAY_VALUE),
+                ADJUST_ADD_MINUTES);
             setupExtendButton(viewBinding.extendSleepTwentyMinutesButton,
-                    getString(R.string.extend_sleep_timer_label, EXTEND_LOTS_MINUTES_DISPLAY_VALUE),
-                    EXTEND_LOTS_MINUTES);
+                getString(R.string.extend_sleep_timer_label, ADJUST_LOTS_MINUTES_DISPLAY_VALUE),
+                ADJUST_LOTS_MINUTES);
         } else {
             setupExtendButton(viewBinding.extendSleepFiveMinutesButton,
                     "+" + getResources().getQuantityString(R.plurals.num_episodes,

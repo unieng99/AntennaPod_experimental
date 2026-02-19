@@ -98,7 +98,7 @@
                     android:paddingVertical="4dp"
                     android:layout_weight="1"
                     style="?attr/materialButtonOutlinedStyle"
-                    tools:text="+5 min" />
+                    tools:text="-10 min" />
 
                 <Button
                     android:id="@+id/extendSleepTenMinutesButton"
@@ -123,7 +123,7 @@
                     android:paddingVertical="4dp"
                     android:layout_weight="1"
                     style="?attr/materialButtonOutlinedStyle"
-                    tools:text="+20 min" />
+                    tools:text="+30 min" />
 
             </LinearLayout>
 

@@ -387,7 +387,12 @@ public abstract class PlaybackController {
     public void extendSleepTimer(long extendTime) {
         TimerValue timeLeft = getSleepTimerTimeLeft();
         if (playbackService != null && timeLeft.getMillisValue() != Playable.INVALID_TIME) {
-            setSleepTimer(timeLeft.getDisplayValue() + extendTime);
+            long newTimerValue = timeLeft.getDisplayValue() + extendTime;
+            if (newTimerValue <= 0) {
+                disableSleepTimer();
+                return;
+            }
+            setSleepTimer(newTimerValue);
         }
     }
 

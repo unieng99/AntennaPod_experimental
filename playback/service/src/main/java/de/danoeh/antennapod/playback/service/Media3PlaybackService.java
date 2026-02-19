@@ -32,6 +32,7 @@ import de.danoeh.antennapod.event.playback.BufferUpdateEvent;
 import de.danoeh.antennapod.event.playback.PlaybackPositionEvent;
 import de.danoeh.antennapod.event.playback.SpeedChangedEvent;
 import de.danoeh.antennapod.event.playback.SleepTimerUpdatedEvent;
+import de.danoeh.antennapod.model.playback.TimerValue;
 import de.danoeh.antennapod.model.feed.Chapter;
 import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.model.feed.FeedMedia;
@@ -69,6 +70,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +89,7 @@ public class Media3PlaybackService extends MediaLibraryService {
     private Disposable completionDisposable;
     private SleepTimer sleepTimer;
     private long lastPositionSaveTime = 0;
+    private boolean wasPlaying = false;
     private final Handler gapHandler = new Handler(Looper.getMainLooper());
 
     @UnstableApi
@@ -195,6 +199,8 @@ public class Media3PlaybackService extends MediaLibraryService {
 
         @Override
         public void onIsPlayingChanged(boolean isPlaying) {
+            boolean startedPlaying = isPlaying && !wasPlaying;
+            wasPlaying = isPlaying;
             PlaybackService.isRunning = !Util.shouldShowPlayButton(player);
             if (PlaybackService.isRunning) {
                 lastPositionSaveTime = System.currentTimeMillis();
@@ -205,6 +211,9 @@ public class Media3PlaybackService extends MediaLibraryService {
                 if (currentPlayable != null) {
                     SynchronizationQueue.getInstance().enqueueEpisodePlayed(currentPlayable, false);
                 }
+            }
+            if (startedPlaying) {
+                maybeAutoEnableSleepTimer();
             }
             WidgetUpdater.WidgetState widgetState = new WidgetUpdater.WidgetState(currentPlayable,
                     PlaybackService.isRunning ? PlayerStatus.PLAYING : PlayerStatus.PAUSED,
@@ -353,8 +362,14 @@ public class Media3PlaybackService extends MediaLibraryService {
         if (sleepTimer == null || !sleepTimer.isActive()) {
             return;
         }
-        long millisLeft = sleepTimer.getTimeLeft().getMillisValue();
-        sleepTimer.updateRemainingTime(millisLeft + extendTime);
+        TimerValue timeLeft = sleepTimer.getTimeLeft();
+        long updatedValue = timeLeft.getDisplayValue() + extendTime;
+        if (updatedValue <= 0) {
+            disableSleepTimer();
+            return;
+        }
+        sleepTimer.updateRemainingTime(updatedValue);
+        EventBus.getDefault().postSticky(SleepTimerUpdatedEvent.updated(sleepTimer.getTimeLeft()));
     }
 
     private void disableSleepTimer() {
@@ -362,6 +377,31 @@ public class Media3PlaybackService extends MediaLibraryService {
             sleepTimer.stop();
             sleepTimer = null;
         }
+    }
+
+    private boolean sleepTimerActive() {
+        return sleepTimer != null && sleepTimer.isActive();
+    }
+
+    private void maybeAutoEnableSleepTimer() {
+        if (!SleepTimerPreferences.autoEnable() || sleepTimerActive()) {
+            return;
+        }
+        boolean autoEnableByTime = true;
+        int fromSetting = SleepTimerPreferences.autoEnableFrom();
+        int toSetting = SleepTimerPreferences.autoEnableTo();
+        if (fromSetting != toSetting) {
+            Calendar now = new GregorianCalendar();
+            int currentHour = now.get(Calendar.HOUR_OF_DAY);
+            autoEnableByTime = SleepTimerPreferences.isInTimeRange(fromSetting, toSetting, currentHour);
+        }
+        if (!autoEnableByTime) {
+            return;
+        }
+
+        setSleepTimer(SleepTimerPreferences.timerMillisOrEpisodes());
+        EventBus.getDefault().post(new MessageEvent(getString(R.string.sleep_timer_enabled_label),
+                (ctx) -> disableSleepTimer(), getString(R.string.undo)));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
