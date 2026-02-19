@@ -1,6 +1,6 @@
 # AntennaPod (Unofficial fork)
 
-> **Unofficial, unsupported fork – unified continuous playback, shortcut icons, improved car integration**
+> **Unofficial fork – unified continuous playback, shortcut icons, improved car integration**
 >
 > Maintained by **@unieng99**. Not affiliated with or endorsed by the upstream [AntennaPod](https://github.com/AntennaPod/AntennaPod) project.
 
@@ -13,7 +13,7 @@
     - Example use cases include binge listening to podcasts, and sequential playback of audiobook/lecture series.
 - **Shortcut icons:** introduced animated Refresh and Autoplay toggle shortcut icons in the right upper corner
 - **Car bluetooth integration improvements**
-- **Support:** Distributed **as-is** with **no support**. Issues/PRs may be closed without action.
+- **Support:** Distributed **as-is** with **no support promised**. Issues/PRs are not routinely monitored. I am not a full-time developer.
 - **Upstream etiquette:** Please **do not** contact the upstream project about this fork or its APKs. The upstream maintainers did not author, review, or support these changes.
 
 ## Try it (at your own risk)
