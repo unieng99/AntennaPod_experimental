@@ -39,7 +39,7 @@ public class RefreshActionViewController {
             return null;
         }
         AppCompatImageView iconView = new AppCompatImageView(context);
-        int size = (int) (context.getResources().getDisplayMetrics().density * 24);
+        int size = (int) (context.getResources().getDisplayMetrics().density * 42);
         iconView.setLayoutParams(new ViewGroup.LayoutParams(size, size));
         iconView.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_shortcut_refresh));
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
