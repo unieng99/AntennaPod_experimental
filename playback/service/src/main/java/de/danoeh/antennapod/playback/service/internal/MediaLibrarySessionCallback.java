@@ -70,7 +70,7 @@ public class MediaLibrarySessionCallback implements MediaLibraryService.MediaLib
         public static final SessionCommand SESSION_COMMAND_SLEEP_TIMER_EXTEND
             = new SessionCommand("sleep_timer_extend", Bundle.EMPTY);
 
-    private static final long SEEK_BUTTON_STEP_MS = 10_000L; // 10 seconds for steering wheel buttons
+    private static final long SEEK_BUTTON_STEP_MS = 20_000L; // 20 seconds for steering wheel buttons
 
     private final Context context;
     private final CompositeDisposable disposables = new CompositeDisposable();
