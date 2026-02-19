@@ -709,6 +709,9 @@
     <string name="reduce_sleep_timer_label">-%d min</string>
     <string name="sleep_timer_episodes_label">episodes</string>
     <string name="auto_advance_streaming_notice">Next episode will play by streaming per your settings</string>
+    <string name="auto_advance_none_remaining">Auto-advance has no further episodes to play.</string>
+    <string name="auto_advance_skip_to_downloaded">Streaming is not allowed per user settings. Skipping to the next downloaded episode.</string>
+    <string name="auto_advance_no_downloaded_remaining">Streaming is not allowed per user settings. Auto-advance has no further downloaded episodes to play.</string>
     <string name="sleep_timer_without_continuous_playback">Disable continuous playback</string>
     <string name="sleep_timer_without_continuous_playback_change_hours">Change hours</string>
     <string name="sleep_timer_without_continuous_playback_message">Instead of always automatically enabling the sleep timer with one episode, please instead disable \"continuous playback\" in the settings.</string>

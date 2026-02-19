@@ -108,6 +108,7 @@ import de.danoeh.antennapod.model.feed.FeedItem;
 import de.danoeh.antennapod.model.feed.FeedItemFilter;
 import de.danoeh.antennapod.model.feed.FeedMedia;
 import de.danoeh.antennapod.model.feed.FeedPreferences;
+import de.danoeh.antennapod.model.feed.SortOrder;
 import de.danoeh.antennapod.model.playback.MediaType;
 import de.danoeh.antennapod.model.playback.Playable;
 import de.danoeh.antennapod.playback.base.PlaybackServiceMediaPlayer;
@@ -1162,28 +1163,55 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                 PlaybackPreferences.writeNoMediaPlaying();
                 return null;
             }
-            FeedItem nextItem = DBReader.getNextInQueue(item);
-            logDebug("queue-mode nextItem=" + (nextItem != null ? nextItem.getTitle() : "<none>"));
-            if (nextItem == null || nextItem.getMedia() == null) {
+            List<FeedItem> queue = DBReader.getQueue();
+            if (queue == null || queue.isEmpty()) {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_none_remaining)));
                 PlaybackPreferences.writeNoMediaPlaying();
                 return null;
             }
-            FeedMedia nextMedia = nextItem.getMedia();
-            if (!nextMedia.localFileAvailable() && !NetworkUtils.isStreamingAllowed()
-                    && !nextItem.getFeed().isLocalFeed()) {
-                logDebug("Queue-mode blocked: streaming not allowed for next item");
-                displayStreamingNotAllowedNotification(
-                        new PlaybackServiceStarter(this, nextMedia).getIntent());
-                PlaybackPreferences.writeNoMediaPlaying();
-                stateManager.stopService();
-                return null;
+            int currentIndex = -1;
+            for (int i = 0; i < queue.size(); i++) {
+                if (queue.get(i).getId() == item.getId()) {
+                    currentIndex = i;
+                    break;
+                }
             }
-            if (!nextMedia.localFileAvailable() && NetworkUtils.isStreamingAllowed()
-                    && !nextItem.getFeed().isLocalFeed()) {
-                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_streaming_notice)));
+            boolean streamingAllowed = NetworkUtils.isStreamingAllowed();
+            boolean sawUndownloaded = false;
+            for (int i = currentIndex + 1; i < queue.size(); i++) {
+                FeedItem candidate = queue.get(i);
+                if (candidate == null || candidate.getMedia() == null) {
+                    continue;
+                }
+                FeedMedia candidateMedia = candidate.getMedia();
+                boolean isLocal = candidateMedia.localFileAvailable();
+                boolean isStreamable = !candidate.getFeed().isLocalFeed();
+                if (isLocal) {
+                    if (sawUndownloaded && !streamingAllowed) {
+                        EventBus.getDefault().post(new MessageEvent(
+                                getString(R.string.auto_advance_skip_to_downloaded)));
+                    }
+                    logDebug("queue-mode returning next downloaded media " + candidateMedia.getEpisodeTitle());
+                    return candidateMedia;
+                }
+                if (isStreamable) {
+                    sawUndownloaded = true;
+                    if (streamingAllowed) {
+                        EventBus.getDefault().post(new MessageEvent(
+                                getString(R.string.auto_advance_streaming_notice)));
+                        logDebug("queue-mode returning streamable media " + candidateMedia.getEpisodeTitle());
+                        return candidateMedia;
+                    }
+                }
             }
-            logDebug("Queue-mode returning next media " + nextMedia.getEpisodeTitle());
-            return nextMedia;
+            if (sawUndownloaded && !streamingAllowed) {
+                EventBus.getDefault().post(new MessageEvent(
+                        getString(R.string.auto_advance_no_downloaded_remaining)));
+            } else {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_none_remaining)));
+            }
+            PlaybackPreferences.writeNoMediaPlaying();
+            return null;
         }
 
         if (podcastMode) {
@@ -1194,28 +1222,62 @@ public class PlaybackService extends MediaBrowserServiceCompat {
             }
             Feed feed = item.getFeed();
             FeedItem nextFeedItem = getNextFeedItem(item);
-            if (nextFeedItem == null || nextFeedItem.getMedia() == null) {
-                logDebug("Podcast mode: no next feed item");
+            List<FeedItem> items = feed != null ? feed.getItems() : null;
+            if (items == null || items.isEmpty()) {
+                FeedItemFilter filter = feed != null && feed.getItemFilter() != null
+                        ? feed.getItemFilter() : FeedItemFilter.unfiltered();
+                items = DBReader.getFeedItemList(feed, filter,
+                    feed != null ? feed.getSortOrder() : SortOrder.GLOBAL_DEFAULT,
+                        0, Integer.MAX_VALUE);
+            }
+            if (items == null || items.isEmpty()) {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_none_remaining)));
                 PlaybackPreferences.writeNoMediaPlaying();
                 return null;
             }
-            FeedMedia nextMedia = nextFeedItem.getMedia();
-            if (!nextMedia.localFileAvailable() && !NetworkUtils.isStreamingAllowed()
-                    && !nextFeedItem.getFeed().isLocalFeed()) {
-                logDebug("Podcast mode blocked: streaming not allowed for next item");
-                displayStreamingNotAllowedNotification(
-                        new PlaybackServiceStarter(this, nextMedia).getIntent());
-                PlaybackPreferences.writeNoMediaPlaying();
-                stateManager.stopService();
-                return null;
+            int currentIndex = -1;
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).getId() == item.getId()) {
+                    currentIndex = i;
+                    break;
+                }
             }
-            if (!nextMedia.localFileAvailable() && NetworkUtils.isStreamingAllowed()
-                    && !nextFeedItem.getFeed().isLocalFeed()) {
-                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_streaming_notice)));
+            boolean streamingAllowed = NetworkUtils.isStreamingAllowed();
+            boolean sawUndownloaded = false;
+            for (int i = currentIndex + 1; i < items.size(); i++) {
+                FeedItem candidate = items.get(i);
+                if (candidate == null || candidate.getMedia() == null) {
+                    continue;
+                }
+                FeedMedia candidateMedia = candidate.getMedia();
+                boolean isLocal = candidateMedia.localFileAvailable();
+                boolean isStreamable = !candidate.getFeed().isLocalFeed();
+                if (isLocal) {
+                    if (sawUndownloaded && !streamingAllowed) {
+                        EventBus.getDefault().post(new MessageEvent(
+                                getString(R.string.auto_advance_skip_to_downloaded)));
+                    }
+                    logDebug("Podcast mode returning downloaded media id=" + candidate.getId());
+                    return candidateMedia;
+                }
+                if (isStreamable) {
+                    sawUndownloaded = true;
+                    if (streamingAllowed) {
+                        EventBus.getDefault().post(new MessageEvent(
+                                getString(R.string.auto_advance_streaming_notice)));
+                        logDebug("Podcast mode returning streamable media id=" + candidate.getId());
+                        return candidateMedia;
+                    }
+                }
             }
-            logDebug("Podcast mode returning next media id=" + nextFeedItem.getId()
-                    + " title=" + nextFeedItem.getTitle());
-            return nextMedia;
+            if (sawUndownloaded && !streamingAllowed) {
+                EventBus.getDefault().post(new MessageEvent(
+                        getString(R.string.auto_advance_no_downloaded_remaining)));
+            } else {
+                EventBus.getDefault().post(new MessageEvent(getString(R.string.auto_advance_none_remaining)));
+            }
+            PlaybackPreferences.writeNoMediaPlaying();
+            return null;
         }
 
         logDebug("Auto-advance stopped: unknown autoAdvanceMode=" + autoAdvanceMode);
