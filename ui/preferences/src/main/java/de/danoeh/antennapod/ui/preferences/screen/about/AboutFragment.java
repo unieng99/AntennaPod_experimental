@@ -53,6 +53,7 @@ public class AboutFragment extends AnimatedFragment {
         }
 
         String commitHash = BuildConfig.COMMIT_HASH;
+        String shortCommitHash = shortenCommitHash(commitHash);
         String buildType = BuildConfig.BUILD_TYPE;
         String flavor = BuildConfig.FLAVOR;
         String packageId = context.getPackageName();
@@ -60,7 +61,7 @@ public class AboutFragment extends AnimatedFragment {
         if (versionName.toLowerCase(Locale.US).contains("beta")) {
             channel = "beta";
         }
-        String versionSummary = getString(R.string.about_version_format, versionName, commitHash);
+        String versionSummary = getString(R.string.about_version_format, versionName, shortCommitHash);
 
         TextView versionValue = view.findViewById(R.id.about_version_value);
         versionValue.setText(versionSummary);
@@ -75,7 +76,7 @@ public class AboutFragment extends AnimatedFragment {
         flavorValue.setText(flavor);
 
         TextView commitValue = view.findViewById(R.id.about_commit_value);
-        commitValue.setText(commitHash);
+        commitValue.setText(shortCommitHash);
 
         TextView packageValue = view.findViewById(R.id.about_package_value);
         packageValue.setText(packageId);
@@ -112,5 +113,12 @@ public class AboutFragment extends AnimatedFragment {
     public void onStart() {
         super.onStart();
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.about_pref);
+    }
+
+    private String shortenCommitHash(String hash) {
+        if (hash == null) {
+            return "";
+        }
+        return hash.length() > 8 ? hash.substring(0, 8) : hash;
     }
 }
