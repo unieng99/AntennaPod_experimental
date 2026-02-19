@@ -1184,8 +1184,24 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                     continue;
                 }
                 FeedMedia candidateMedia = candidate.getMedia();
-                boolean isLocal = candidateMedia.localFileAvailable();
-                boolean isStreamable = !candidate.getFeed().isLocalFeed();
+                boolean isLocalFeed = candidate.getFeed() != null && candidate.getFeed().isLocalFeed();
+                String localPath = deriveLocalFilePath(candidateMedia, isLocalFeed);
+                boolean contentUri = isContentUri(localPath);
+                boolean fileExists = contentUri || (localPath != null && new File(localPath).exists());
+                boolean hasLocalUri = localPath != null;
+                boolean isLocal = candidateMedia.localFileAvailable() || (isLocalFeed && hasLocalUri && fileExists);
+                boolean isStreamable = !isLocalFeed;
+                logDebug("queue-mode candidate id=" + candidate.getId()
+                        + " localFeed=" + isLocalFeed
+                        + " downloaded=" + candidateMedia.isDownloaded()
+                    + " localFileUrl=" + candidateMedia.getLocalFileUrl()
+                    + " downloadUrl=" + candidateMedia.getDownloadUrl()
+                    + " derivedPath=" + localPath
+                    + " contentUri=" + contentUri
+                    + " fileExists=" + fileExists
+                        + " localPlayable=" + isLocal
+                        + " streamable=" + isStreamable
+                        + " streamingAllowed=" + streamingAllowed);
                 if (isLocal) {
                     if (sawUndownloaded && !streamingAllowed) {
                         EventBus.getDefault().post(new MessageEvent(
@@ -1202,6 +1218,10 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                         logDebug("queue-mode returning streamable media " + candidateMedia.getEpisodeTitle());
                         return candidateMedia;
                     }
+                }
+                if (isLocalFeed && !fileExists) {
+                    logDebug("queue-mode skipping local feed item id=" + candidate.getId()
+                            + " because file missing path=" + localPath);
                 }
             }
             if (sawUndownloaded && !streamingAllowed) {
@@ -1250,8 +1270,24 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                     continue;
                 }
                 FeedMedia candidateMedia = candidate.getMedia();
-                boolean isLocal = candidateMedia.localFileAvailable();
-                boolean isStreamable = !candidate.getFeed().isLocalFeed();
+                boolean isLocalFeed = candidate.getFeed() != null && candidate.getFeed().isLocalFeed();
+                String localPath = deriveLocalFilePath(candidateMedia, isLocalFeed);
+                boolean contentUri = isContentUri(localPath);
+                boolean fileExists = contentUri || (localPath != null && new File(localPath).exists());
+                boolean hasLocalUri = localPath != null;
+                boolean isLocal = candidateMedia.localFileAvailable() || (isLocalFeed && hasLocalUri && fileExists);
+                boolean isStreamable = !isLocalFeed;
+                logDebug("podcast-mode candidate id=" + candidate.getId()
+                        + " localFeed=" + isLocalFeed
+                        + " downloaded=" + candidateMedia.isDownloaded()
+                    + " localFileUrl=" + candidateMedia.getLocalFileUrl()
+                    + " downloadUrl=" + candidateMedia.getDownloadUrl()
+                    + " derivedPath=" + localPath
+                    + " contentUri=" + contentUri
+                    + " fileExists=" + fileExists
+                        + " localPlayable=" + isLocal
+                        + " streamable=" + isStreamable
+                        + " streamingAllowed=" + streamingAllowed);
                 if (isLocal) {
                     if (sawUndownloaded && !streamingAllowed) {
                         EventBus.getDefault().post(new MessageEvent(
@@ -1268,6 +1304,10 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                         logDebug("Podcast mode returning streamable media id=" + candidate.getId());
                         return candidateMedia;
                     }
+                }
+                if (isLocalFeed && !fileExists) {
+                    logDebug("Podcast mode skipping local feed item id=" + candidate.getId()
+                            + " because file missing path=" + localPath);
                 }
             }
             if (sawUndownloaded && !streamingAllowed) {
@@ -2293,5 +2333,27 @@ public class PlaybackService extends MediaBrowserServiceCompat {
         } catch (IOException e) {
             Log.e(TAG, "logDebug write failed", e);
         }
+    }
+
+    private String deriveLocalFilePath(FeedMedia media, boolean isLocalFeed) {
+        String localUrl = media.getLocalFileUrl();
+        if (!TextUtils.isEmpty(localUrl)) {
+            return localUrl;
+        }
+        if (!isLocalFeed) {
+            return null;
+        }
+        String downloadUrl = media.getDownloadUrl();
+        if (TextUtils.isEmpty(downloadUrl)) {
+            return null;
+        }
+        if (downloadUrl.startsWith("file://")) {
+            return downloadUrl.substring("file://".length());
+        }
+        return downloadUrl;
+    }
+
+    private boolean isContentUri(String path) {
+        return path != null && path.startsWith("content://");
     }
 }
